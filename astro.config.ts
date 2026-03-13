@@ -30,11 +30,11 @@ const config = defineConfig({
 		mdx(),
 		sitemap(),
 		spectre({
-			name: 'Spectre',
+			name: 'keyfrog.kr',
 			openGraph: {
 				home: {
-					title: 'Spectre',
-					description: 'A minimalistic theme for Astro.',
+					title: 'keyfrog.kr',
+					description: '',
 				},
 				blog: {
 					title: 'Blog',

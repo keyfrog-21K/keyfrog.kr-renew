@@ -3,9 +3,36 @@
 		"id": 1,
 		"icon": {
 			"type": "lucide",
+			"name": "house"
+		},
+		"text": "Personal Website",
+		"link": "https://doeon.kim"
+	},
+	{
+		"id": 2,
+		"icon": {
+			"type": "lucide",
+			"name": "mail"
+		},
+		"text": "me@doeon.kim",
+		"link": "mailto:me@doeon.kim"
+	},
+	{
+		"id": 3,
+		"icon": {
+			"type": "lucide",
 			"name": "github"
 		},
 		"text": "GitHub",
-		"link": "https://github.com/louisescher/spectre"
+		"link": "https://github.com/keyfrog-21K"
+	},
+	{
+		"id": 4,
+		"icon": {
+			"type": "lucide",
+			"name": "linkedin"
+		},
+		"text": "LinkedIn",
+		"link": "https://www.linkedin.com/in/keyfrog"
 	}
 ]

@@ -1,0 +1,109 @@
+---
+title: "라즈베리파이 + Nginx + Cloudflare로 개인 CDN(?) 구축기"
+description: "사실 진짜 CDN을 밑바닥부터 구축한건 아니고.. Nginx + Cloudflare를 적당히 섞어서 구축했습니다."
+image: "https://cdn.keyfrog.kr/img/blogposts/260314/thumbnail.png"
+createdAt: 03-14-2026
+draft: false
+tags:
+  - project
+---
+
+# 서론
+
+갑자기 개인 CDN(!)을 한번 만들어보고 싶다는 생각이 들었습니다.  
+마침 집에 남는 라즈베리파이도 있어서 바로 구축에 들어갔습니다.
+
+참고로 이 글의 썸네일 이미지는 제가 만든 CDN에서 제공되고 있습니다.
+
+물론 **진짜 CDN을 밑바닥부터 구현한 것은 아닙니다.**  
+제가 만든 것은 사실상 **정적 파일 서버 + Cloudflare CDN** 조합에 가깝습니다.
+
+그래도 어쨌든 동작하는 무언가는 만들었으니 기록으로 남겨보려 합니다.
+
+---
+
+# 과정
+
+## 정적 파일 서버를 만들어보자
+
+먼저 파일을 호스팅할 **정적 파일 서버**를 만들었습니다.
+
+홈 서버로 사용 중인 Raspberry Pi에 Docker로 Nginx 컨테이너를 하나 올리고,  
+데이터 디렉토리를 volume으로 연결했습니다.
+
+```yaml
+version: '3'
+
+services:
+  static_host:
+    image: nginx:alpine
+    container_name: static_host
+    ports:
+      - "8080:80"
+    volumes:
+      - /home/keyfrog/files/data:/usr/share/nginx/html:ro
+    restart: unless-stopped
+```
+
+사실 이 `docker-compose.yml`은 제가 직접 쓴 건 아니고 Gemini에게 작성해달라고 했습니다.
+요즘 이런 단순 설정 파일은 AI가 꽤 잘 만들어줍니다.
+
+이렇게 하면 간단한 **정적 파일 호스팅 서버**가 하나 완성됩니다.
+
+이제 `/home/keyfrog/files/data` 폴더에 파일을 넣으면 바로 웹에서 접근할 수 있습니다.
+
+예를 들어 다음 파일이 있다면
+
+```
+/home/keyfrog/files/data/img/1234.png
+```
+
+브라우저에서
+
+```
+http://[서버IP]:8080/img/1234.png
+```
+
+로 접속하면 파일이 바로 다운로드되거나 브라우저에서 열립니다.
+
+## CDN을 연결해보자
+
+여기까지 구축하면 한 가지 문제가 있습니다.
+
+이 서버는 **그냥 제 집에 있는 서버**일 뿐입니다.
+
+CDN(Content Delivery Network)은 파일을 여러 지역의 서버에 캐싱해두고
+사용자와 **가장 가까운 서버에서 콘텐츠를 전달**하는 구조입니다.
+
+하지만 현재 구조는 파일이 **제 서버 한 곳에만 존재합니다.**
+
+대한민국에서는 빠르게 받아지겠지만
+지구 반대편의 **우루과이에서 접속하면 물리적인 거리 때문에 속도가 느려질 수 있습니다.**
+
+그래서 이 문제를 해결하기 위해 **Cloudflare CDN을 앞단에 붙이기로 했습니다.**
+
+Cloudflare를 쓰는 김에 **Cloudflare Tunnel**도 함께 사용했습니다.
+집 서버의 **공인 IP를 공개하거나 포트를 열고 싶지 않았기 때문입니다.**
+
+설정 과정은 자세히 설명하진 않겠습니다. 이 글은 제 경험을 공유하는 글이지 설정 가이드가 아니기 때문입니다. 영 도움이 필요하시다면 [이 글](https://velog.io/@mrcocoball2/Cloudflare-Cloudflare-Tunnel로-포트포워딩-없이-홈-서버-웹-서비스를-외부에-공개하기)을 참고하시는걸 추천합니다.
+전체적인 흐름은 대략 다음과 같습니다.
+
+1. 서버에 `cloudflared` 설치
+2. Cloudflare 계정과 인증
+3. Tunnel 생성
+4. 도메인의 DNS 레코드를 Tunnel에 연결
+
+그리고 CDN용 서브도메인으로 **`cdn.keyfrog.kr`**을 사용하도록 설정했습니다.
+
+추가로 `data` 폴더에 간단한 `index.html`도 만들어 두어서
+루트 주소로 접속했을 때 빈 화면이 나오지 않도록 했습니다.
+
+---
+
+이렇게 해서 **개인 CDN(?) 같은 무언가**를 하나 만들어 보았습니다.
+
+앞으로 이 블로그에 올라오는 글의 이미지들은  
+대부분 `cdn.keyfrog.kr`에서 서빙될 예정입니다.
+
+작은 홈 서버에서 시작한 프로젝트지만,
+생각보다 꽤 쓸만하게 굴러가고 있습니다.

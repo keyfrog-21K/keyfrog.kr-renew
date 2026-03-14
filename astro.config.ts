@@ -19,10 +19,14 @@ const {
 	GISCUS_LANG,
 } = loadEnv(process.env.NODE_ENV!, process.cwd(), '');
 
-// https://astro.build/config
-const config = defineConfig({
-	site: 'https://spectre.lou.gg',
+export default defineConfig({
+	site: 'https://keyfrog.kr',
 	output: 'static',
+
+	image: {
+		domains: ['cdn.keyfrog.kr']
+	},
+
 	integrations: [
 		expressiveCode({
 			themes: [spectreDark],
@@ -59,5 +63,3 @@ const config = defineConfig({
 	],
 	adapter: vercel(),
 });
-
-export default config;
